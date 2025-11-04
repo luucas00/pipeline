@@ -48,7 +48,8 @@ jobs:
         uses: github/codeql-action/autobuild@v3
 
       - name: Executando a análise SAST
-        uses: github/codeM-action/analyze@v3
+        
+        uses: github/codeql-action/analyze@v3
 
   dast_scan:
     name: 3. DAST (Análise Dinâmica com OWASP ZAP)
@@ -57,9 +58,9 @@ jobs:
     
     steps:
       - name: Executando o Scan DAST (OWASP ZAP)
+        
         uses: ZAP/action-baseline@v0.11.0
         with:
           target: 'https://pipeline-kiqv.vercel.app'
         
         continue-on-error: true
-        # Forçando a atualização
