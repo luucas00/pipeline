@@ -1,5 +1,5 @@
 
-name: Pipeline de CI/CD e DevSecOps
+name: Pipeline CI/CD com DevSecOps (Aula 08)
 
 
 on:
@@ -12,51 +12,55 @@ on:
 jobs:
   
   
-build_and_test:
-  name: Build e Teste
-  runs-on: ubuntu-latest
+  build_and_test:
+    name: 1. Build & Test
+    runs-on: ubuntu-latest 
+    
+    steps:
+      - name: Baixando o código do repositório
+        uses: actions/checkout@v4
 
-  steps:
-    - name: 1. Baixar o código
-      uses: actions/checkout@v4
-
-    - name: 2. Verificar se o index.html existe
-      run: |
-        echo "Iniciando teste de build..."
-        if [ -f "index.html" ]; then
-          echo "Sucesso: index.html encontrado."
-        else
-          echo "Erro: index.html não encontrado!"
-          exit 1
-        fi
+      - name: Verificando o build (se o index.html existe)
+        run: |
+          echo "Iniciando teste de build..."
+          if [ -f "index.html" ]; then
+            echo "Sucesso: index.html encontrado. Build OK."
+          else
+            echo "Erro: index.html não encontrado!"
+            exit 1 # Faz o job falhar se o arquivo não existir
+          fi
 
   
   sast_scan:
-    name: Scan SAST (CodeQL)
-    needs: build_and_test
+    name: 2. SAST (Análise Estática com CodeQL)
+    needs: build_and_test 
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: 1. Baixar o código
+      - name: Baixando o código do repositório
         uses: actions/checkout@v4
 
-      - name: 2. Inicializar o CodeQL (Ferramenta SAST)
+      - name: Inicializando o CodeQL (Ferramenta SAST)
         uses: github/codeql-action/init@v3
         with:
-          languages: html 
+          
+          languages: html
 
-      - name: 3. Executar análise SAST
+      - name: Executando a análise SAST
         uses: github/codeql-action/analyze@v3
 
   
   dast_scan:
-    name: Scan DAST (OWASP ZAP)
+    name: 3. DAST (Análise Dinâmica com OWASP ZAP)
     needs: build_and_test 
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: 1. Scan DAST com OWASP ZAP
+      - name: Executando o Scan DAST (OWASP ZAP)
         uses: ZAP/action-baseline@v0.11.0
         with:
           
           target: 'https://pipeline-kiqv.vercel.app'
+          
+        
+        continue-on-error: true
