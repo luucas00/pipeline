@@ -1,0 +1,62 @@
+
+name: Pipeline de CI/CD e DevSecOps
+
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  
+  
+build_and_test:
+  name: Build e Teste
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: 1. Baixar o código
+      uses: actions/checkout@v4
+
+    - name: 2. Verificar se o index.html existe
+      run: |
+        echo "Iniciando teste de build..."
+        if [ -f "index.html" ]; then
+          echo "Sucesso: index.html encontrado."
+        else
+          echo "Erro: index.html não encontrado!"
+          exit 1
+        fi
+
+  
+  sast_scan:
+    name: Scan SAST (CodeQL)
+    needs: build_and_test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Baixar o código
+        uses: actions/checkout@v4
+
+      - name: 2. Inicializar o CodeQL (Ferramenta SAST)
+        uses: github/codeql-action/init@v3
+        with:
+          languages: html 
+
+      - name: 3. Executar análise SAST
+        uses: github/codeql-action/analyze@v3
+
+  
+  dast_scan:
+    name: Scan DAST (OWASP ZAP)
+    needs: build_and_test 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Scan DAST com OWASP ZAP
+        uses: ZAP/action-baseline@v0.11.0
+        with:
+          
+          target: 'https://pipeline-kiqv.vercel.app'
