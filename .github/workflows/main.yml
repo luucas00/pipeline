@@ -64,3 +64,5 @@ jobs:
           target: 'https://pipeline-kiqv.vercel.app'
         
         continue-on-error: true
+
+        # Forçando a atualização do DAST
