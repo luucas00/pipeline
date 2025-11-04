@@ -1,6 +1,4 @@
-
 name: Pipeline CI/CD com DevSecOps (Aula 08)
-
 
 on:
   push:
@@ -8,13 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  security-events: write
+  actions: read
 
 jobs:
   
-  
   build_and_test:
     name: 1. Build & Test
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     
     steps:
       - name: Baixando o código do repositório
@@ -27,10 +27,9 @@ jobs:
             echo "Sucesso: index.html encontrado. Build OK."
           else
             echo "Erro: index.html não encontrado!"
-            exit 1 # Faz o job falhar se o arquivo não existir
+            exit 1
           fi
 
-  
   sast_scan:
     name: 2. SAST (Análise Estática com CodeQL)
     needs: build_and_test 
@@ -43,13 +42,14 @@ jobs:
       - name: Inicializando o CodeQL (Ferramenta SAST)
         uses: github/codeql-action/init@v3
         with:
-          
-          languages: html
+          languages: javascript 
+
+      - name: Autobuild do CodeQL
+        uses: github/codeql-action/autobuild@v3
 
       - name: Executando a análise SAST
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeM-action/analyze@v3
 
-  
   dast_scan:
     name: 3. DAST (Análise Dinâmica com OWASP ZAP)
     needs: build_and_test 
@@ -59,8 +59,7 @@ jobs:
       - name: Executando o Scan DAST (OWASP ZAP)
         uses: ZAP/action-baseline@v0.11.0
         with:
-          
           target: 'https://pipeline-kiqv.vercel.app'
-          
         
         continue-on-error: true
+        # Forçando a atualização
